@@ -24,53 +24,65 @@
 		var o = $.extend({
 			fitX: true,
 			fitY: true,
+			fillArea: false,
 			allowEnlargement: false
 		}, options);
-
+		
 		$(this).each(function() {
 			var $this = $(this);
 
-			var parent = $this.parent();
-			var parentWidth = parent.innerWidth();
-			var parentHeight = parent.innerHeight();
+			var performScale = function() {
+				var parent = $this.parent();
+				var parentWidth = parent.innerWidth();
+				var parentHeight = parent.innerHeight();
 
-			var originalSize = $this.data('original-size');
-			if (!originalSize) {
-				originalSize = {
-					width:  $this.width(),
-					height: $this.height()
+				var originalSize = $this.data('original-size');
+				if (!originalSize) {
+					originalSize = {
+						width:  $this.width(),
+						height: $this.height()
+					};
+					$this.data('original-size', originalSize);
+				}
+
+				var currentSize = {
+					width:  originalSize.width,
+					height: originalSize.height
 				};
-				$this.data('original-size', originalSize);
-			}
+				
+				var scale = 1;
+				if (o.fitX && (o.allowEnlargement || currentSize.width > parentWidth)) {
+					scale = parentWidth / currentSize.width;
+					currentSize.width = Math.floor(currentSize.width * scale);
+					currentSize.height = Math.floor(currentSize.height * scale);
+				}
+				
+				if (o.fitY) {
+					var doScale = currentSize.height > parentHeight;
+					var newScale = parentHeight / currentSize.height;
+					if (o.fillArea) doScale = currentSize.height < parentHeight;
+					if (o.allowEnlargement) doScale = newScale > scale;
+					if (doScale) {
+						currentSize.width = Math.floor(currentSize.width * newScale);
+						currentSize.height = Math.floor(currentSize.height * newScale);
+						scale = newScale;
+					}
+				}
 
-			var currentSize = {
-				width:  originalSize.width,
-				height: originalSize.height
+				$this.css({
+					top: Math.round((parentHeight - currentSize.height) / 2),
+					left: Math.round((parentWidth - currentSize.width) / 2),
+					width: currentSize.width,
+					height: currentSize.height,
+					position: 'relative'
+				});
 			};
 
-			var scale = 1;
-			if (o.fitX && (o.allowEnlargement || currentSize.width > parentWidth)) {
-				scale = parentWidth / currentSize.width;
-				currentSize.width = Math.floor(currentSize.width * scale);
-				currentSize.height = Math.floor(currentSize.height * scale);
+			if ($this[0].tagName.toLowerCase() == 'img' && !$this[0].width) {
+				$this[0].onload = performScale;
+			} else {
+				performScale();
 			}
-
-			if (o.fitY && (o.allowEnlargement || currentSize.height > parentHeight)) {
-				var newScale = parentHeight / currentSize.height;
-				if (o.allowEnlargement ? (newScale > scale) : true) {
-					currentSize.width = Math.floor(currentSize.width * newScale);
-					currentSize.height = Math.floor(currentSize.height * newScale);
-					scale = newScale;
-				}
-			}
-
-			$this.css({
-				top: Math.round((parentHeight - currentSize.height) / 2),
-				left: Math.round((parentWidth - currentSize.width) / 2),
-				width: currentSize.width,
-				height: currentSize.height,
-				position: 'relative'
-			});
 		});
 	};
 })(jQuery);
