@@ -24,15 +24,24 @@
 		var o = $.extend({
 			fitX: true,
 			fitY: true,
-			fillArea: false,
-			allowEnlargement: false
+			fillArea: true,
+			allowEnlargement: true,
+			parent:null
 		}, options);
-		
 		$(this).each(function() {
-			var $this = $(this);
+			var $this = $(this),
+				imagePosition = {
+					top:"auto",
+					left:"auto",
+					bottom:"auto",
+					right:"auto"
+				},
+				// this value could be assigned to the image trough the data-alignement attribute
+				// by default this value is center-center
+				alignement = $this.data("alignement") || "center-center";
 
 			var performScale = function() {
-				var parent = $this.parent();
+				var parent = o.parent || $this.parent();
 				var parentWidth = parent.innerWidth();
 				var parentHeight = parent.innerHeight();
 
@@ -49,32 +58,74 @@
 					width:  originalSize.width,
 					height: originalSize.height
 				};
-				
+
 				var scale = 1;
 				if (o.fitX && (o.allowEnlargement || currentSize.width > parentWidth)) {
 					scale = parentWidth / currentSize.width;
-					currentSize.width = Math.floor(currentSize.width * scale);
-					currentSize.height = Math.floor(currentSize.height * scale);
+					currentSize.width = Math.floor(currentSize.width * scale) + 1;
+					currentSize.height = Math.floor(currentSize.height * scale) + 1;
 				}
-				
 				if (o.fitY) {
 					var doScale = currentSize.height > parentHeight;
 					var newScale = parentHeight / currentSize.height;
 					if (o.fillArea) doScale = currentSize.height < parentHeight;
-					if (o.allowEnlargement) doScale = newScale > scale;
+					//if (o.allowEnlargement) doScale = newScale > scale;
 					if (doScale) {
-						currentSize.width = Math.floor(currentSize.width * newScale);
-						currentSize.height = Math.floor(currentSize.height * newScale);
+						currentSize.width = Math.floor(currentSize.width * newScale) + 1;
+						currentSize.height = Math.floor(currentSize.height * newScale) + 1;
 						scale = newScale;
 					}
 				}
 
+				// Deciding where to allign the image
+				switch (alignement) {
+					case "left-top":
+					imagePosition.top = 0;
+					imagePosition.left = 0;
+					break;
+					case "center-top":
+					imagePosition.top = 0;
+					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
+					break;
+					case "right-top":
+					imagePosition.top = 0;
+					imagePosition.right = 0;
+					break;
+					case "left-center":
+					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
+					imagePosition.left = 0;
+					break;
+					case "center-center":
+					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
+					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
+					break;
+					case "right-center":
+					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
+					imagePosition.right = 0;
+					break;
+					case "left-bottom":
+					imagePosition.bottom = 0;
+					imagePosition.left = 0;
+					break;
+					case "center-bottom":
+					imagePosition.bottom = 0;
+					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
+					break;
+					case "right-bottom":
+					imagePosition.bottom = 0;
+					imagePosition.right = 0;
+					break;
+					default:
+					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
+					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
+				}
 				$this.css({
-					top: Math.round((parentHeight - currentSize.height) / 2),
-					left: Math.round((parentWidth - currentSize.width) / 2),
+					top: imagePosition.top,
+					left: imagePosition.left,
+					bottom: imagePosition.bottom,
+					right: imagePosition.right,
 					width: currentSize.width,
-					height: currentSize.height,
-					position: 'relative'
+					height: currentSize.height
 				});
 			};
 
