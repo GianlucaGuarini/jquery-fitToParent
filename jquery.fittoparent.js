@@ -26,7 +26,8 @@
 			fitY: true,
 			fillArea: true,
 			allowEnlargement: true,
-			parent:null
+			parent:null,
+			scrollWrapper: false
 		}, options);
 		$(this).each(function() {
 			var $this = $(this),
@@ -41,11 +42,10 @@
 				alignement = $this.data("alignement") || "center-center";
 
 			var performScale = function() {
-				var parent = o.parent || $this.parent();
-				var parentWidth = parent.innerWidth();
-				var parentHeight = parent.innerHeight();
-
-				var originalSize = $this.data('original-size');
+				var parent = o.parent || $this.parent(),
+					parentWidth = parent.innerWidth(),
+					parentHeight = parent.innerHeight(),
+					originalSize = $this.data('original-size');
 				if (!originalSize) {
 					originalSize = {
 						width:  $this.width(),
@@ -119,14 +119,24 @@
 					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
 					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
 				}
-				$this.css({
-					top: imagePosition.top,
-					left: imagePosition.left,
-					bottom: imagePosition.bottom,
-					right: imagePosition.right,
-					width: currentSize.width,
-					height: currentSize.height
-				});
+				if (o.scrollWrapper) {
+					$this.css({
+						width: currentSize.width,
+						height: currentSize.height
+					});
+					parent.prop({
+						scrollLeft: -imagePosition.left,
+						scrollTop: -imagePosition.top
+					});
+				} else
+					$this.css({
+						top: imagePosition.top,
+						left: imagePosition.left,
+						bottom: imagePosition.bottom,
+						right: imagePosition.right,
+						width: currentSize.width,
+						height: currentSize.height
+					});
 			};
 
 			if ($this[0].tagName.toLowerCase() == 'img' && !$this[0].width) {
