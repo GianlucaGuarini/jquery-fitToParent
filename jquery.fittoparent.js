@@ -1,5 +1,3 @@
-// Copyright (c) 2011 Brian Reavis
-
 // Permission is hereby granted, free of charge, to any person obtaining
 // a copy of this software and associated documentation files (the
 // "Software"), to deal in the Software without restriction, including
@@ -26,16 +24,17 @@
 			fitY: true,
 			fillArea: true,
 			allowEnlargement: true,
-			parent:null,
+			parent: null,
+			inlcudepadding: true,
 			scrollWrapper: false
 		}, options);
 		$(this).each(function() {
 			var $this = $(this),
 				imagePosition = {
-					top:"auto",
-					left:"auto",
-					bottom:"auto",
-					right:"auto"
+					top: "auto",
+					left: "auto",
+					bottom: "auto",
+					right: "auto"
 				},
 				// this value could be assigned to the image trough the data-alignement attribute
 				// by default this value is center-center
@@ -43,19 +42,19 @@
 
 			var performScale = function() {
 				var parent = o.parent || $this.parent(),
-					parentWidth = parent.innerWidth(),
-					parentHeight = parent.innerHeight(),
+					parentWidth = o.inlcudepadding ? parent.innerWidth() : parent.width(),
+					parentHeight = o.inlcudepadding ? parent.innerHeight() : parent.height(),
 					originalSize = $this.data('original-size');
 				if (!originalSize) {
 					originalSize = {
-						width:  $this.width(),
+						width: $this.width(),
 						height: $this.height()
 					};
 					$this.data('original-size', originalSize);
 				}
 
 				var currentSize = {
-					width:  originalSize.width,
+					width: originalSize.width,
 					height: originalSize.height
 				};
 
@@ -66,9 +65,9 @@
 					currentSize.height = Math.floor(currentSize.height * scale) + 1;
 				}
 				if (o.fitY) {
-					var doScale = currentSize.height > parentHeight;
-					var newScale = parentHeight / currentSize.height;
-					if (o.fillArea) doScale = currentSize.height < parentHeight;
+					var doScale = o.fillArea ? currentSize.height < parentHeight : currentSize.height > parentHeight,
+						newScale = parentHeight / currentSize.height;
+
 					//if (o.allowEnlargement) doScale = newScale > scale;
 					if (doScale) {
 						currentSize.width = Math.floor(currentSize.width * newScale) + 1;
@@ -80,44 +79,44 @@
 				// Deciding where to allign the image
 				switch (alignement) {
 					case "left-top":
-					imagePosition.top = 0;
-					imagePosition.left = 0;
-					break;
+						imagePosition.top = 0;
+						imagePosition.left = 0;
+						break;
 					case "center-top":
-					imagePosition.top = 0;
-					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
-					break;
+						imagePosition.top = 0;
+						imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
+						break;
 					case "right-top":
-					imagePosition.top = 0;
-					imagePosition.right = 0;
-					break;
+						imagePosition.top = 0;
+						imagePosition.right = 0;
+						break;
 					case "left-center":
-					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
-					imagePosition.left = 0;
-					break;
+						imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
+						imagePosition.left = 0;
+						break;
 					case "center-center":
-					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
-					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
-					break;
+						imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
+						imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
+						break;
 					case "right-center":
-					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
-					imagePosition.right = 0;
-					break;
+						imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
+						imagePosition.right = 0;
+						break;
 					case "left-bottom":
-					imagePosition.bottom = 0;
-					imagePosition.left = 0;
-					break;
+						imagePosition.bottom = 0;
+						imagePosition.left = 0;
+						break;
 					case "center-bottom":
-					imagePosition.bottom = 0;
-					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
-					break;
+						imagePosition.bottom = 0;
+						imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
+						break;
 					case "right-bottom":
-					imagePosition.bottom = 0;
-					imagePosition.right = 0;
-					break;
+						imagePosition.bottom = 0;
+						imagePosition.right = 0;
+						break;
 					default:
-					imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
-					imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
+						imagePosition.top = Math.round((parentHeight - currentSize.height) / 2);
+						imagePosition.left = Math.round((parentWidth - currentSize.width) / 2);
 				}
 				if (o.scrollWrapper) {
 					$this.css({
@@ -128,7 +127,7 @@
 						scrollLeft: -imagePosition.left,
 						scrollTop: -imagePosition.top
 					});
-				} else
+				} else {
 					$this.css({
 						top: imagePosition.top,
 						left: imagePosition.left,
@@ -137,9 +136,11 @@
 						width: currentSize.width,
 						height: currentSize.height
 					});
+				}
+
 			};
 
-			if ($this[0].tagName.toLowerCase() == 'img' && !$this[0].width) {
+			if ($this[0].tagName.toLowerCase() === 'img' && !$this[0].width) {
 				$this[0].onload = performScale;
 			} else {
 				performScale();
